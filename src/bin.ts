@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { extname } from 'node:path'
+import { dirname, extname, join } from 'node:path'
 import { parseArgs } from 'node:util'
 
 import chalk from 'chalk'
@@ -22,6 +22,7 @@ Options:
   -p, --port <port>  Port (default: 3000)
   -h, --host <host>  Host (default: localhost)
   -s, --static <dir> Static files directory (multiple allowed)
+  -m, --middleware <file>
   --help             Show this message
   --version          Show version number
 `)
@@ -32,7 +33,8 @@ function args(): {
   file: string
   port: number
   host: string
-  static: string[]
+  static: string[],
+  middleware?: string
 } {
   try {
     const { values, positionals } = parseArgs({
@@ -52,6 +54,10 @@ function args(): {
           short: 's',
           multiple: true,
           default: [],
+        },
+        middleware: {
+          type: 'string',
+          short: 'm',
         },
         help: {
           type: 'boolean',
@@ -100,6 +106,7 @@ function args(): {
       port: parseInt(values.port as string),
       host: values.host as string,
       static: values.static as string[],
+      middleware: values.middleware
     }
   } catch (e) {
     if ((e as NodeJS.ErrnoException).code === 'ERR_PARSE_ARGS_UNKNOWN_OPTION') {
@@ -112,7 +119,7 @@ function args(): {
   }
 }
 
-const { file, port, host, static: staticArr } = args()
+const { file, port, host, static: staticArr, middleware } = args()
 
 if (!existsSync(file)) {
   console.log(chalk.red(`File ${file} not found`))
@@ -141,6 +148,17 @@ await db.read()
 
 // Create app
 const app = createApp(db, { logger: false, static: staticArr })
+
+// Load custom middleware
+if (middleware) {
+  const file = join(dirname(import.meta.resolve("../", fileURLToPath(import.meta.url))), middleware);
+  const {default: _middleware}  = await import(file); 
+  _middleware(app);
+}
+
+// Load rest middlewareS
+const {default: rest} = await import('./rest.js');
+rest(app);
 
 function logRoutes(data: Data) {
   console.log(chalk.bold('Endpoints:'))

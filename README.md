@@ -202,6 +202,23 @@ json-server -s ./static
 json-server -s ./static -s ./node_modules
 ```
 
+## Using a custom middleware
+
+You can provide a cusotm middleware using option `-m path/to/file.ts` or `--middleware path/to/file.ts`;
+
+Middleware file must export a function this way:
+
+```ts
+import { App } from "@tinyhttp/app";
+
+export default (app: App) => {
+  app.get('/path',
+    function (req, res) {
+      // implement middleware logic
+    });
+};
+```
+
 ## Notable differences with v0.17
 
 - `id` is always a string and will be generated for you if missing
