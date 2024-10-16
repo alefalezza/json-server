@@ -1,9 +1,11 @@
 
-import { App } from '@tinyhttp/app'
+import { App } from '@tinyhttp/app';
 
-import { isItem } from './service.js'
+import { isItem, Service } from './service.js';
 
 export default (app: App) => {
+
+  const service = app.locals['service'] as Service;
   
   app.get('/:name', (req, res, next) => {
     const { name = '' } = req.params

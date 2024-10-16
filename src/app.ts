@@ -23,12 +23,13 @@ const eta = new Eta({
   cache: isProduction,
 })
 
-export function createApp(db: Low<Data>, options: AppOptions = {}) {
-  // Create service
-  const service = new Service(db)
-
+export function createApp(db: Low<Data>, options: AppOptions = {}) {  
   // Create app
   const app = new App()
+
+  // Create service
+  const service = new Service(db)
+  app.locals['service'] = service;
 
   // Static files
   app.use(sirv('public', { dev: !isProduction }))

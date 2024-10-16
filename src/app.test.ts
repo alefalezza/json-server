@@ -8,6 +8,7 @@ import { Low, Memory } from 'lowdb'
 import { temporaryDirectory } from 'tempy'
 
 import { createApp } from './app.js'
+import rest from './rest.js'
 import { Data } from './service.js'
 
 type Test = {
@@ -41,6 +42,7 @@ db.data = {
   object: { f1: 'foo' },
 }
 const app = createApp(db, { static: [tmpDir] })
+rest(app);
 
 await new Promise<void>((resolve, reject) => {
   try {
